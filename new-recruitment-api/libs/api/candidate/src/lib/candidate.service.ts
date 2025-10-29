@@ -33,7 +33,6 @@ export class CandidateService {
         throw new ConflictException(`Candidate with email ${createDto.email} already exists`);
       }
 
-      // Create candidate in new system
       const candidate = await this.candidateRepository.create(createDto);
       this.logger.log(`Candidate created successfully with ID ${candidate.id}`);
 
@@ -63,12 +62,12 @@ export class CandidateService {
       });
 
       if (result.success) {
-        this.logger.log(`✅ Candidate synced to Legacy API: ${email}`);
+        this.logger.log(`Candidate synced to Legacy API: ${email}`);
       } else {
-        this.logger.warn(`⚠️ Legacy API sync failed for ${email}: ${result.error}`);
+        this.logger.warn(`Legacy API sync failed for ${email}: ${result.error}`);
       }
     } catch (error: any) {
-      this.logger.error(`❌ Failed to sync candidate ${email} to Legacy API: ${error.message}`);
+      this.logger.error(`Failed to sync candidate ${email} to Legacy API: ${error.message}`);
     }
   }
 

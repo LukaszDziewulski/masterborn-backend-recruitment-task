@@ -38,14 +38,14 @@ export class LegacyApiClient {
         })
       );
 
-      this.logger.log(`✅ Legacy API success for ${candidateData.email}: ${response.status}`);
+      this.logger.log(`Legacy API success for ${candidateData.email}: ${response.status}`);
 
       return {
         success: true,
         message: response.data.message,
       };
     } catch (error: any) {
-      this.logger.error(`⚠️ Legacy API error for ${candidateData.email}: ${error.message}`);
+      this.logger.error(`Legacy API error for ${candidateData.email}: ${error.message}`);
 
       if (error.response) {
         return {

@@ -8,22 +8,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.$connect();
-      this.logger.log("✅ Successfully connected to database");
+      this.logger.log("Successfully connected to database");
     } catch (error) {
-      this.logger.error("❌ Failed to connect to database", error);
+      this.logger.error("Failed to connect to database", error);
       throw error;
     }
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    this.logger.log("🔌 Disconnected from database");
+    this.logger.log("Disconnected from database");
   }
 
-  /**
-   * Clean database - useful for testing
-   * Deletes all data from all tables in correct order
-   */
   async cleanDb() {
     if (process.env.NODE_ENV === "production") {
       throw new Error("Cannot clean database in production!");
@@ -37,9 +33,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     ]);
   }
 
-  /**
-   * Seed job offers - useful for development
-   */
   async seedJobOffers() {
     const jobOffers = [
       {
@@ -144,12 +137,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       data: jobOffers,
     });
 
-    this.logger.log(`✅ Seeded ${jobOffers.length} job offers`);
+    this.logger.log(`Seeded ${jobOffers.length} job offers`);
   }
 
-  /**
-   * Seed recruiters - useful for development
-   */
   async seedRecruiters() {
     const recruiters = [
       {
@@ -182,6 +172,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       data: recruiters,
     });
 
-    this.logger.log(`✅ Seeded ${recruiters.length} recruiters`);
+    this.logger.log(`Seeded ${recruiters.length} recruiters`);
   }
 }
