@@ -1,6 +1,42 @@
-version: "3.8"
-
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: recruitment-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://recruitment_user:recruitment123@dev-db:5432/recruitment_db?schema=public
+      PORT: 3000
+      NODE_ENV: development
+      LEGACY_API_URL: http://host.docker.internal:4040
+      LEGACY_API_KEY: 0194ec39-4437-7c7f-b720-7cd7b2c8d7f4
+    depends_on:
+      dev-db:
+        condition: service_healthy
+    networks:
+      - recruitment-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3000/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    command: >
+      sh -c "
+        npx prisma migrate deploy &&
+        node dist/apps/recruitment-api/main.js
+      "
+
   dev-db:
     image: postgres:15-alpine
     container_name: recruitment-dev-db
@@ -21,31 +57,9 @@ services:
       timeout: 5s
       retries: 5
 
-  test-db:
-    image: postgres:15-alpine
-    container_name: recruitment-test-db
-    restart: unless-stopped
-    ports:
-      - "5437:5432"
-    environment:
-      POSTGRES_USER: recruitment_user
-      POSTGRES_PASSWORD: recruitment123
-      POSTGRES_DB: recruitment_test_db
-    volumes:
-      - recruitment-test-data:/var/lib/postgresql/data
-    networks:
-      - recruitment-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U recruitment_user -d recruitment_test_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   recruitment-dev-data:
     name: recruitment-dev-data
-  recruitment-test-data:
-    name: recruitment-test-data
 
 networks:
   recruitment-network:

@@ -28,23 +28,13 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`, "Bootstrap");
-  Logger.log(`📚 Swagger documentation: http://localhost:${port}/api`, "Bootstrap");
+  Logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`, "Bootstrap");
+  Logger.log(`Swagger documentation: http://localhost:${port}/api`, "Bootstrap");
 }
 
 function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
     .setTitle("Recruitment API")
-    .setDescription(
-      `New Recruitment System - Candidate Management API
-      
-      This API allows HR department to manage candidates in the recruitment process.
-      Features include:
-      - Creating candidates with job offer assignments
-      - Listing candidates with pagination
-      - Integration with legacy recruitment system
-      - Multi-job offer support for each candidate`
-    )
     .setVersion("1.0")
     .addTag("Candidates", "Candidate management endpoints")
     .addTag("Job Offers", "Job offer management endpoints")

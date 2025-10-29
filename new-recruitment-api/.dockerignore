@@ -1,0 +1,79 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Nx cache
+.nx/
+.nx/cache
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Environment files (will be provided at runtime)
+.env
+.env.local
+.env.*.local
+.env.test
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Misc
+.history/
+.editorconfig
+.prettierrc
+.prettierignore
+.eslintrc.json
+.eslintignore
+
+# Development migrations (use in production only)
+prisma/migrations/*_dev/
