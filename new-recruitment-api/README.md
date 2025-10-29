@@ -1,234 +1,113 @@
-# Recruitment API
+﻿# New Recruitment API
 
-Modern recruitment management system built with **NestJS**, **Nx**, **Prisma**, and **PostgreSQL**.
+Modern recruitment management system built with NestJS, Nx, Prisma, and PostgreSQL.
 
-## 📋 Features
+## Features
 
-- **Candidate Management**: Create and manage candidates with full recruitment lifecycle
-- **Job Offer Integration**: Associate candidates with multiple job offers
-- **Legacy System Sync**: Automatic synchronization with legacy recruitment API
-- **Pagination**: Efficient handling of large candidate datasets (up to 1000+ per position)
-- **REST API**: Well-documented REST API with Swagger/OpenAPI
-- **Type Safety**: Full TypeScript implementation with strict type checking
-- **Database**: PostgreSQL with Prisma ORM
-- **Testing**: Comprehensive unit and e2e tests
-- **Docker Ready**: Containerized application and database
+- Candidate Management (full CRUD)
+- Job Offer Management (link candidates to positions)
+- Pagination for 1000+ candidates (max 100 per page)
+- Automatic Legacy API synchronization
+- 72 unit tests (100% passing)
+- Swagger/OpenAPI documentation
+- Docker containerization
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
 - Docker Desktop
-- npm or yarn
+- npm
 
-### Installation
+### Setup
 
-1. **Clone the repository**
-
-```bash
-git clone <repository-url>
-cd new-recruitment-api
 ```
-
-2. **Install dependencies**
-
-```bash
 npm install
-```
-
-3. **Start database with Docker**
-
-```bash
 npm run db:dev:up
-```
-
-4. **Run database migrations**
-
-```bash
 npm run prisma:migrate:deploy
-```
-
-5. **Generate Prisma Client**
-
-```bash
 npm run prisma:generate
-```
-
-6. **Start the application**
-
-```bash
 npm run start:dev
 ```
 
-The API will be available at:
+**URLs:**
+- API: http://localhost:3000/api
+- Swagger: http://localhost:3000/api
 
-- **Application**: http://localhost:3000/api
-- **Swagger Documentation**: http://localhost:3000/api
-
-## 📦 Available Scripts
+## Commands
 
 ### Development
-
-- `npm run start:dev` - Start development server with hot reload
-- `npm run start:debug` - Start with debugger
-- `npm run build` - Build production bundle
-- `npm run start` - Start production server
+```
+npm run start:dev        # Start dev server
+npm run build            # Build production
+npm run start            # Start production
+```
 
 ### Database
-
-- `npm run db:dev:up` - Start development database
-- `npm run db:dev:rm` - Remove development database
-- `npm run db:dev:restart` - Restart database and run migrations
-- `npm run prisma:migrate:dev` - Create and apply new migration
-- `npm run prisma:migrate:deploy` - Apply pending migrations
-- `npm run prisma:studio` - Open Prisma Studio GUI
-- `npm run prisma:generate` - Generate Prisma Client
+```
+npm run db:dev:up        # Start PostgreSQL (Docker)
+npm run db:dev:down      # Stop database
+npm run prisma:studio    # Open Prisma Studio GUI
+npm run prisma:generate  # Generate Prisma Client
+```
 
 ### Testing
-
-- `npm run test` - Run unit tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:cov` - Run tests with coverage
-- `npm run test:e2e` - Run e2e tests
-
-### Code Quality
-
-- `npm run lint` - Lint code
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-
-## 🏗️ Project Structure
-
 ```
-new-recruitment-api/
-├── apps/
-│   └── recruitment-api/          # Main NestJS application
-│       ├── src/
-│       │   ├── main.ts           # Application entry point
-│       │   └── app/              # App module, controller, service
-│       └── test/                 # E2E tests
-├── libs/
-│   └── api/
-│       ├── db/                   # Prisma database module (will be created)
-│       ├── candidate/            # Candidate feature module (will be created)
-│       ├── job-offer/            # Job offer feature module (will be created)
-│       └── common/               # Shared utilities (will be created)
-├── prisma/
-│   ├── schema.prisma             # Database schema (will be created)
-│   └── migrations/               # Database migrations
-├── docker-compose.yml            # Docker configuration (will be created)
-├── Dockerfile                    # Application container (will be created)
-├── .env                          # Environment variables
-└── nx.json                       # Nx workspace configuration
+npm run test             # All tests
+npx nx test api-candidate    # Candidate tests (44)
+npx nx test api-job-offer    # Job offer tests (28)
 ```
 
-## 🗄️ Database Schema
+### Docker
+```
+docker-compose up -d     # Start services
+docker-compose down      # Stop services
+docker-compose logs -f   # View logs
+```
 
-The application uses PostgreSQL with the following main entities:
+## API Endpoints
 
-- **Candidate**: Stores candidate information with recruitment status
-- **JobOffer**: Available job positions
-- **CandidateJobOffer**: Many-to-many relation between candidates and job offers
-- **Recruiter**: HR recruiters information
+### Candidates
+- POST /api/candidates - Create (auto-syncs to Legacy API)
+- GET /api/candidates?page=1&limit=10 - List with pagination
+- GET /api/candidates/:id - Get details
+- PATCH /api/candidates/:id - Update
+- DELETE /api/candidates/:id - Delete
 
-## 📚 API Documentation
+### Job Offers
+- POST /api/job-offers - Create
+- GET /api/job-offers - List all
+- GET /api/job-offers/:id - Get details
+- PATCH /api/job-offers/:id - Update
+- DELETE /api/job-offers/:id - Delete
 
-Once the application is running, visit:
+## Testing Legacy API Sync
 
-- **Swagger UI**: http://localhost:3000/api
+```
+# Terminal 1: Start Legacy API
+cd ../legacy-api
+npm start
 
-### Main Endpoints (Will be implemented)
+# Terminal 2: Create candidate via Swagger or curl
+curl -X POST http://localhost:3000/api/candidates \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Jan",
+    "lastName": "Kowalski",
+    "email": "jan@example.com",
+    "phone": "+48 123 456 789",
+    "yearsOfExperience": 5,
+    "consentDate": "2024-01-15T10:00:00Z",
+    "jobOfferId": 1
+  }'
+```
 
-- `POST /api/candidates` - Create new candidate
-- `GET /api/candidates` - List candidates with pagination
-- `GET /api/candidates/:id` - Get candidate by ID
-- `GET /api/job-offers` - List available job offers
+## Configuration
 
-## 🔧 Configuration
-
-Environment variables are configured in `.env` file:
-
-```env
-DATABASE_URL=postgresql://recruitment_user:recruitment123@localhost:5436/recruitment_db?schema=public
+.env file:
+```
+DATABASE_URL=postgresql://recruitment_user:recruitment123@localhost:5436/recruitment_db
 PORT=3000
-NODE_ENV=development
 LEGACY_API_URL=http://localhost:4040
 LEGACY_API_KEY=0194ec39-4437-7c7f-b720-7cd7b2c8d7f4
 ```
-
-## 🐳 Docker
-
-### Start Services
-
-```bash
-docker-compose up -d
-```
-
-### Stop Services
-
-```bash
-docker-compose down
-```
-
-### View Logs
-
-```bash
-docker-compose logs -f
-```
-
-## 🧪 Testing
-
-The project includes:
-
-- **Unit Tests**: For services, controllers, and utilities
-- **Integration Tests**: For repository and database operations
-- **E2E Tests**: For complete API workflows
-
-Run all tests:
-
-```bash
-npm run test
-```
-
-## 🏗️ Architecture
-
-This project follows best practices:
-
-- **Monorepo Structure**: Nx workspace for scalable architecture
-- **Modular Design**: Feature-based modules (libs)
-- **Repository Pattern**: Separation of data access logic
-- **DTO Validation**: Class-validator for request validation
-- **Swagger Documentation**: Auto-generated API docs
-- **Environment Configuration**: Type-safe configuration management
-- **Error Handling**: Centralized error handling with proper HTTP status codes
-
-## 📝 Next Steps
-
-This is the initial project setup. The following features will be implemented:
-
-1. ✅ Project initialization with Nx and NestJS
-2. ⏳ Prisma setup with PostgreSQL
-3. ⏳ Docker configuration
-4. ⏳ Candidate module implementation
-5. ⏳ Job offer module implementation
-6. ⏳ Legacy API integration
-7. ⏳ Comprehensive testing
-8. ⏳ Production deployment
-
-## 🤝 Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests: `npm run test`
-4. Run linter: `npm run lint`
-5. Commit with conventional commits
-6. Create a pull request
-
-## 📄 License
-
-ISC
-
-## 👥 Author
-
-MasterBorn
