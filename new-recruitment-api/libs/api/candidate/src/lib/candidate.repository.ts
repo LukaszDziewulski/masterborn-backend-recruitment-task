@@ -60,6 +60,28 @@ export class CandidateRepository {
     });
   }
 
+  async findAllPaginated(
+    skip: number,
+    take: number,
+    status?: RecruitmentStatus
+  ): Promise<{ data: Candidate[]; total: number }> {
+    const where = status ? { status } : {};
+
+    const [data, total] = await Promise.all([
+      this.prisma.candidate.findMany({
+        skip,
+        take,
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      this.prisma.candidate.count({ where }),
+    ]);
+
+    return { data, total };
+  }
+
   async update(id: number, data: UpdateCandidateDto): Promise<Candidate> {
     return await this.prisma.candidate.update({
       where: { id },

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
@@ -14,7 +15,12 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RecruitmentStatus } from "@prisma/client";
 import { CandidateService } from "./candidate.service";
-import { CandidateResponseDto, CreateCandidateDto, UpdateCandidateDto } from "./dtos";
+import {
+  CandidateResponseDto,
+  CreateCandidateDto,
+  PaginatedResponseDto,
+  UpdateCandidateDto,
+} from "./dtos";
 
 @Controller("candidates")
 @ApiTags("Candidates")
@@ -40,20 +46,40 @@ export class CandidateController {
 
   @Get()
   @ApiOperation({
-    summary: "Get all candidates",
-    description: "Retrieves all candidates or filters by status",
+    summary: "Get all candidates with pagination",
+    description: "Retrieves candidates with pagination and optional status filter",
   })
-  @ApiQuery({ name: "status", required: false, enum: RecruitmentStatus })
+  @ApiQuery({
+    name: "page",
+    required: false,
+    type: Number,
+    example: 1,
+    description: "Page number (default: 1)",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    type: Number,
+    example: 10,
+    description: "Items per page (default: 10, max: 100)",
+  })
+  @ApiQuery({
+    name: "status",
+    required: false,
+    enum: RecruitmentStatus,
+    description: "Filter by recruitment status",
+  })
   @ApiResponse({
     status: 200,
-    description: "Candidates retrieved successfully",
-    type: [CandidateResponseDto],
+    description: "Candidates retrieved successfully with pagination",
+    type: PaginatedResponseDto,
   })
-  async findAll(@Query("status") status?: RecruitmentStatus): Promise<CandidateResponseDto[]> {
-    if (status) {
-      return await this.candidateService.findByStatus(status);
-    }
-    return await this.candidateService.findAll();
+  async findAll(
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query("limit", new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query("status") status?: RecruitmentStatus
+  ): Promise<PaginatedResponseDto<CandidateResponseDto>> {
+    return await this.candidateService.findAllPaginated(page, limit, status);
   }
 
   @Get(":id")

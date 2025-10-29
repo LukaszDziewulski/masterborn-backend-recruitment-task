@@ -9,7 +9,12 @@ import {
 import { RecruitmentStatus } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { CandidateRepository } from "./candidate.repository";
-import { CandidateResponseDto, CreateCandidateDto, UpdateCandidateDto } from "./dtos";
+import {
+  CandidateResponseDto,
+  CreateCandidateDto,
+  PaginatedResponseDto,
+  UpdateCandidateDto,
+} from "./dtos";
 import { LegacyApiClient } from "./legacy-api.client";
 
 @Injectable()
@@ -73,6 +78,34 @@ export class CandidateService {
       return candidates.map(candidate => CandidateResponseDto.fromEntity(candidate));
     } catch (error) {
       this.logger.error(`Error fetching candidates: ${error}`);
+      throw new InternalServerErrorException("Failed to fetch candidates");
+    }
+  }
+
+  async findAllPaginated(
+    page: number,
+    limit: number,
+    status?: RecruitmentStatus
+  ): Promise<PaginatedResponseDto<CandidateResponseDto>> {
+    try {
+      if (page < 1) {
+        throw new BadRequestException("Page must be greater than 0");
+      }
+      if (limit < 1 || limit > 100) {
+        throw new BadRequestException("Limit must be between 1 and 100");
+      }
+
+      const skip = (page - 1) * limit;
+      const { data, total } = await this.candidateRepository.findAllPaginated(skip, limit, status);
+
+      const candidateDtos = data.map(candidate => CandidateResponseDto.fromEntity(candidate));
+
+      return PaginatedResponseDto.create(candidateDtos, page, limit, total);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(`Error fetching paginated candidates: ${error}`);
       throw new InternalServerErrorException("Failed to fetch candidates");
     }
   }
