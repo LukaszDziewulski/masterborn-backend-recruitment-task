@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { CandidateModule } from "@recruitment-api/candidate";
 import { PrismaModule } from "@recruitment-api/db";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import { JobOfferModule } from "@recruitment-api/job-offer";
 
 @Module({
   imports: [
@@ -11,8 +11,8 @@ import { AppService } from "./app.service";
       envFilePath: [".env.local", ".env"],
     }),
     PrismaModule,
+    CandidateModule,
+    JobOfferModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
