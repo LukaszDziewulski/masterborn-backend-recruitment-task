@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Candidate {
+    id                Int                 @id @default(autoincrement())
+    createdAt         DateTime            @default(now()) @map("created_at")
+    updatedAt         DateTime            @updatedAt @map("updated_at")
+    firstName         String              @map("first_name")
+    lastName          String              @map("last_name")
+    email             String              @unique
+    phone             String
+    yearsOfExperience Int                 @map("years_of_experience")
+    recruiterNotes    String?             @map("recruiter_notes")
+    status            RecruitmentStatus   @default(NEW)
+    consentDate       DateTime            @map("consent_date")
+    jobOffers         CandidateJobOffer[]
+
+    @@map("candidates")
+}
+
+model JobOffer {
+    id          Int                 @id @default(autoincrement())
+    createdAt   DateTime            @default(now()) @map("created_at")
+    updatedAt   DateTime            @updatedAt @map("updated_at")
+    title       String
+    description String
+    salaryRange String?             @map("salary_range")
+    location    String?
+    candidates  CandidateJobOffer[]
+
+    @@map("job_offers")
+}
+
+model CandidateJobOffer {
+    candidateId Int       @map("candidate_id")
+    jobOfferId  Int       @map("job_offer_id")
+    assignedAt  DateTime  @default(now()) @map("assigned_at")
+    candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+    jobOffer    JobOffer  @relation(fields: [jobOfferId], references: [id], onDelete: Cascade)
+
+    @@id([candidateId, jobOfferId])
+    @@map("candidate_job_offers")
+}
+
+model Recruiter {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    name      String
+    email     String   @unique
+    phone     String?
+    company   String
+
+    @@map("recruiters")
+}
+
+enum RecruitmentStatus {
+    NEW
+    IN_PROGRESS
+    ACCEPTED
+    REJECTED
+}
