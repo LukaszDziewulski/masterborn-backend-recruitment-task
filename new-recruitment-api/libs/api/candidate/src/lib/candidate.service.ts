@@ -10,12 +10,16 @@ import { RecruitmentStatus } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { CandidateRepository } from "./candidate.repository";
 import { CandidateResponseDto, CreateCandidateDto, UpdateCandidateDto } from "./dtos";
+import { LegacyApiClient } from "./legacy-api.client";
 
 @Injectable()
 export class CandidateService {
   private readonly logger = new Logger(CandidateService.name);
 
-  constructor(private readonly candidateRepository: CandidateRepository) {}
+  constructor(
+    private readonly candidateRepository: CandidateRepository,
+    private readonly legacyApiClient: LegacyApiClient
+  ) {}
 
   async create(createDto: CreateCandidateDto): Promise<CandidateResponseDto> {
     try {
@@ -24,8 +28,12 @@ export class CandidateService {
         throw new ConflictException(`Candidate with email ${createDto.email} already exists`);
       }
 
+      // Create candidate in new system
       const candidate = await this.candidateRepository.create(createDto);
       this.logger.log(`Candidate created successfully with ID ${candidate.id}`);
+
+      this.syncToLegacyApi(createDto.firstName, createDto.lastName, createDto.email);
+
       return CandidateResponseDto.fromEntity(candidate);
     } catch (error) {
       if (error instanceof ConflictException) {
@@ -38,6 +46,24 @@ export class CandidateService {
       }
       this.logger.error(`Error creating candidate: ${error}`);
       throw new InternalServerErrorException("Failed to create candidate");
+    }
+  }
+
+  private async syncToLegacyApi(firstName: string, lastName: string, email: string): Promise<void> {
+    try {
+      const result = await this.legacyApiClient.sendCandidate({
+        firstName,
+        lastName,
+        email,
+      });
+
+      if (result.success) {
+        this.logger.log(`✅ Candidate synced to Legacy API: ${email}`);
+      } else {
+        this.logger.warn(`⚠️ Legacy API sync failed for ${email}: ${result.error}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`❌ Failed to sync candidate ${email} to Legacy API: ${error.message}`);
     }
   }
 
@@ -127,6 +153,22 @@ export class CandidateService {
       }
       this.logger.error(`Error deleting candidate with ID ${id}: ${error}`);
       throw new InternalServerErrorException("Failed to delete candidate");
+    }
+  }
+
+  /**
+   * Find candidate by email (used by migration service)
+   */
+  async findByEmail(email: string): Promise<CandidateResponseDto | null> {
+    try {
+      const candidate = await this.candidateRepository.findByEmail(email);
+      if (!candidate) {
+        return null;
+      }
+      return CandidateResponseDto.fromEntity(candidate);
+    } catch (error) {
+      this.logger.error(`Error fetching candidate by email ${email}: ${error}`);
+      throw new InternalServerErrorException("Failed to fetch candidate by email");
     }
   }
 }

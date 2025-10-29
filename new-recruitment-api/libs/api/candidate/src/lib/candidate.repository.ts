@@ -8,7 +8,6 @@ export class CandidateRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateCandidateDto): Promise<Candidate> {
-    // First create the candidate
     const candidate = await this.prisma.candidate.create({
       data: {
         firstName: data.firstName,
@@ -22,7 +21,6 @@ export class CandidateRepository {
       },
     });
 
-    // Then create the relation to job offer
     await this.prisma.candidateJobOffer.create({
       data: {
         candidateId: candidate.id,
